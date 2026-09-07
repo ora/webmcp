@@ -5,14 +5,14 @@ Status: approved (design reviewed in-session)
 
 ## What this is
 
-A coding-agent plugin, published from `eralabs-ai/webmcp`, that makes websites
+A coding-agent plugin, published from `ora/webmcp`, that makes websites
 WebMCP-compatible: it teaches an agent (Claude Code, Codex, or any skills.sh
 host) to audit a web app for agent-readiness, propose page tools, implement
 them against the standard `document.modelContext` API, and verify them in a
 real browser.
 
 Brand: **ora** (plugin name `webmcp`, marketplace name `ora`, author Ora,
-`https://github.com/eralabs-ai`).
+`https://github.com/ora`).
 
 ## Decisions (locked with the user)
 

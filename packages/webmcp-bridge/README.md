@@ -5,7 +5,7 @@ endpoint from the browser, discovers its tools, and registers each one on
 `document.modelContext`, so in-browser AI agents can call the tools you
 already ship. Built on the official `@modelcontextprotocol/sdk`. MIT.
 
-Part of the [webmcp plugin](https://github.com/eralabs-ai/webmcp) by
+Part of the [webmcp plugin](https://github.com/ora/webmcp) by
 [ora](https://ora.ai).
 
 ## Install

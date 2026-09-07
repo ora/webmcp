@@ -10,17 +10,17 @@
     "agent-ready",
     "ora"
   ],
-  "homepage": "https://github.com/eralabs-ai/webmcp/tree/main/packages/webmcp-verify",
+  "homepage": "https://github.com/ora/webmcp/tree/main/packages/webmcp-verify",
   "bugs": {
-    "url": "https://github.com/eralabs-ai/webmcp/issues"
+    "url": "https://github.com/ora/webmcp/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/eralabs-ai/webmcp.git",
+    "url": "git+https://github.com/ora/webmcp.git",
     "directory": "packages/webmcp-verify"
   },
   "license": "MIT",
-  "author": "Ora (https://github.com/eralabs-ai)",
+  "author": "Ora (https://github.com/ora)",
   "type": "module",
   "bin": {
     "webmcp-verify": "./dist/cli.js"

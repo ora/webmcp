@@ -11,17 +11,17 @@
     "agent-ready",
     "ora"
   ],
-  "homepage": "https://github.com/eralabs-ai/webmcp/tree/main/packages/webmcp-bridge",
+  "homepage": "https://github.com/ora/webmcp/tree/main/packages/webmcp-bridge",
   "bugs": {
-    "url": "https://github.com/eralabs-ai/webmcp/issues"
+    "url": "https://github.com/ora/webmcp/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/eralabs-ai/webmcp.git",
+    "url": "git+https://github.com/ora/webmcp.git",
     "directory": "packages/webmcp-bridge"
   },
   "license": "MIT",
-  "author": "Ora (https://github.com/eralabs-ai)",
+  "author": "Ora (https://github.com/ora)",
   "type": "module",
   "sideEffects": false,
   "exports": {

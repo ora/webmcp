@@ -6,7 +6,7 @@ registered on `document.modelContext`, lints the registrations, and can
 execute a tool exactly the way an agent would (`getTools` +
 `executeTool`). No Canary, no manual flags, no console pasting.
 
-Part of the [webmcp plugin](https://github.com/eralabs-ai/webmcp) by
+Part of the [webmcp plugin](https://github.com/ora/webmcp) by
 [Ora](https://ora.ai). MIT.
 
 ## Use
