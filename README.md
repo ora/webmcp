@@ -19,21 +19,21 @@ a small MIT library, [`@ora-ai/webmcp-bridge`](packages/webmcp-bridge/README.md)
 **Claude Code**
 
 ```
-/plugin marketplace add eralabs-ai/webmcp
+/plugin marketplace add ora/webmcp
 /plugin install webmcp@ora
 ```
 
 **Codex**
 
 ```
-codex plugin marketplace add eralabs-ai/webmcp
+codex plugin marketplace add ora/webmcp
 codex plugin add webmcp
 ```
 
 **Cursor / skills.sh**
 
 ```
-npx skills add eralabs-ai/webmcp
+npx skills add ora/webmcp
 ```
 
 ## What you get
@@ -126,7 +126,7 @@ your site at [ora.ai](https://ora.ai), or from the terminal:
 `npx @ora-ai/ax audit your-site.com`.
 
 Ora is a product of Era Labs; the GitHub org is
-[eralabs-ai](https://github.com/eralabs-ai).
+[ora](https://github.com/ora).
 
 ## License
 
