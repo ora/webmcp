@@ -1,6 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
+import { ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import { createWebMcpBridge } from "../src/index.js";
 import type { ModelContextLike, ModelContextTool } from "../src/types.js";
@@ -143,6 +144,70 @@ describe("createWebMcpBridge", () => {
     await bridge.close();
     expect(tools.size).toBe(0);
     expect(bridge.active).toBe(false);
+  });
+
+  it.each([false, true])(
+    "closes the connection when initial discovery fails (close rejects: %s)",
+    async (closeRejects) => {
+      const { server, clientTransport } = await makeServer();
+      server.server.setRequestHandler(ListToolsRequestSchema, () => {
+        throw new Error("initial tools/list failed");
+      });
+      const originalClose = clientTransport.close.bind(clientTransport);
+      const close = vi.spyOn(clientTransport, "close");
+      if (closeRejects) {
+        close.mockImplementationOnce(async () => {
+          await originalClose();
+          throw new Error("transport cleanup failed");
+        });
+      }
+      const { mc, tools } = fakeModelContext();
+
+      try {
+        await expect(
+          createWebMcpBridge({ transport: clientTransport, modelContext: mc }),
+        ).rejects.toThrow("initial tools/list failed");
+        expect(close).toHaveBeenCalled();
+        await expect(
+          clientTransport.send({ jsonrpc: "2.0", method: "notifications/initialized" }),
+        ).rejects.toThrow("Not connected");
+        expect(tools.size).toBe(0);
+      } finally {
+        close.mockRestore();
+        await originalClose();
+        await server.close();
+      }
+    },
+  );
+
+  it("unregisters partial tools when an initialization error handler throws", async () => {
+    const { server, clientTransport } = await makeServer();
+    const { mc, tools } = fakeModelContext();
+    const registerTool = mc.registerTool.bind(mc);
+    const registrationError = new Error("tool registration failed");
+    mc.registerTool = async (tool, options) => {
+      if (tool.name === "delete_everything") throw registrationError;
+      await registerTool(tool, options);
+    };
+    const close = vi.spyOn(clientTransport, "close");
+
+    try {
+      await expect(
+        createWebMcpBridge({
+          transport: clientTransport,
+          modelContext: mc,
+          onRegisterError: (_name, error) => {
+            throw error;
+          },
+        }),
+      ).rejects.toBe(registrationError);
+      expect(tools.size).toBe(0);
+      expect(close).toHaveBeenCalled();
+    } finally {
+      close.mockRestore();
+      await clientTransport.close();
+      await server.close();
+    }
   });
 
   it("re-syncs when the server's tool list changes", async () => {

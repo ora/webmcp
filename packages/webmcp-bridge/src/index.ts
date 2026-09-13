@@ -198,6 +198,14 @@ export async function createWebMcpBridge(
   >();
   let closed = false;
 
+  async function close(): Promise<void> {
+    if (closed) return;
+    closed = true;
+    for (const entry of registered.values()) entry.controller.abort();
+    registered.clear();
+    await client.close();
+  }
+
   async function register(tool: Tool): Promise<void> {
     const taken = new Set(
       [...registered.values()].map((entry) => entry.bridged.name),
@@ -263,7 +271,14 @@ export async function createWebMcpBridge(
     });
   }
 
-  await scheduleSync();
+  try {
+    await scheduleSync();
+  } catch (error) {
+    // No bridge is returned on initialization failure, so the caller cannot
+    // release its resources. Preserve the original error if cleanup fails too.
+    await close().catch(() => {});
+    throw error;
+  }
 
   return {
     get tools() {
@@ -272,12 +287,6 @@ export async function createWebMcpBridge(
     get active() {
       return !closed;
     },
-    async close() {
-      if (closed) return;
-      closed = true;
-      for (const entry of registered.values()) entry.controller.abort();
-      registered.clear();
-      await client.close();
-    },
+    close,
   };
 }
