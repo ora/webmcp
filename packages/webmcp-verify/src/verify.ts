@@ -8,7 +8,12 @@ export interface PageEvaluator {
 export interface VerifiedTool {
   name: string;
   description: string;
-  annotations: { readOnlyHint?: boolean; untrustedContentHint?: boolean } | null;
+  annotations: {
+    readOnlyHint?: boolean;
+    untrustedContentHint?: boolean;
+    consequentialHint?: boolean;
+    debugging?: boolean;
+  } | null;
   inputSchema: Record<string, unknown> | null;
 }
 

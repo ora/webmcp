@@ -46,7 +46,7 @@ async function makeServer() {
   );
   server.registerTool(
     "delete_everything",
-    { description: "Dangerous tool." },
+    { description: "Dangerous tool.", annotations: { destructiveHint: true } },
     async () => ({ content: [{ type: "text", text: "boom" }] }),
   );
   server.registerTool(
@@ -78,10 +78,17 @@ describe("createWebMcpBridge", () => {
     expect(weather.annotations).toEqual({
       readOnlyHint: true,
       untrustedContentHint: true,
+      consequentialHint: false,
     });
     expect(tools.get("delete_everything")!.annotations).toEqual({
       readOnlyHint: false,
       untrustedContentHint: false,
+      consequentialHint: true,
+    });
+    expect(tools.get("always_fails")!.annotations).toEqual({
+      readOnlyHint: false,
+      untrustedContentHint: false,
+      consequentialHint: false,
     });
     expect(bridge.tools.map((t) => t.remoteName).sort()).toEqual([
       "always_fails",
@@ -109,6 +116,31 @@ describe("createWebMcpBridge", () => {
     await expect(tools.get("always_fails")!.execute({})).resolves.toEqual({
       error: "upstream exploded",
     });
+    await bridge.close();
+  });
+
+  it("returns transport failures as { error } instead of throwing", async () => {
+    const { server, clientTransport } = await makeServer();
+    const { mc, tools } = fakeModelContext();
+    const bridge = await createWebMcpBridge({ transport: clientTransport, modelContext: mc });
+
+    await server.close();
+    await expect(tools.get("get_weather")!.execute({ city: "Lisbon" })).resolves.toEqual({
+      error: expect.stringMatching(/^get_weather could not be called on the MCP server: /) as unknown,
+    });
+    await bridge.close();
+  });
+
+  it("still rejects when the execution is cancelled", async () => {
+    const { clientTransport } = await makeServer();
+    const { mc, tools } = fakeModelContext();
+    const bridge = await createWebMcpBridge({ transport: clientTransport, modelContext: mc });
+
+    const controller = new AbortController();
+    controller.abort();
+    await expect(
+      tools.get("get_weather")!.execute({ city: "Lisbon" }, { signal: controller.signal }),
+    ).rejects.toBeDefined();
     await bridge.close();
   });
 

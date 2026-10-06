@@ -148,13 +148,24 @@ function toDescriptor(
       // An open-world tool reaches beyond the server's own domain, so its
       // output can carry third-party content.
       untrustedContentHint: tool.annotations?.openWorldHint === true,
+      // Only an explicit MCP destructiveHint counts: MCP defaults it to true
+      // for every non-read-only tool, which would flag them all.
+      consequentialHint: tool.annotations?.destructiveHint === true,
     },
     async execute(input, options) {
-      const result = (await client.callTool(
-        { name: tool.name, arguments: input ?? {} },
-        undefined,
-        options?.signal ? { signal: options.signal } : undefined,
-      )) as CallToolResult;
+      let result: CallToolResult;
+      try {
+        result = (await client.callTool(
+          { name: tool.name, arguments: input ?? {} },
+          undefined,
+          options?.signal ? { signal: options.signal } : undefined,
+        )) as CallToolResult;
+      } catch (error) {
+        // Cancellation is the one case that must reject.
+        if (options?.signal?.aborted) throw error;
+        const message = error instanceof Error ? error.message : String(error);
+        return { error: `${tool.name} could not be called on the MCP server: ${message}` };
+      }
       return toResult(result, tool.name);
     },
   };

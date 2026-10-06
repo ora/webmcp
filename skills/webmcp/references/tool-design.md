@@ -96,9 +96,12 @@ metadata is a prompt-injection surface the site controls.
 | --- | --- |
 | `readOnlyHint` | no state change at all |
 | `untrustedContentHint` | output can contain user or third-party text (reviews, comments, UGC) |
+| `consequentialHint` | the call has significant, real-world or non-reversible effects (booking, payment, sending a message) |
+| `debugging` | the tool exists for debugging or developer tooling, not end users |
 
 Mislabeling `readOnlyHint` trains agents to call mutating tools casually.
-There is no destructive hint: consequences belong in the description, and
+`consequentialHint` lets agents ask the user before the call, but it is a
+hint, not a safeguard: consequences still belong in the description, and
 irreversible steps stop at a reversible boundary (pending state + the app's
 own confirm UI, or prepare/confirm where confirm requires a token that
 prepare returned).

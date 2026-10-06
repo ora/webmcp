@@ -19,8 +19,6 @@ When `canRegisterWebMCP()` is false, log once and skip registration. Never
 throw during app boot; the human UI must work in every browser.
 
 Secure context is required: HTTPS in production, localhost in development.
-The document must also stay origin-keyed: setting `document.domain` or
-serving `Origin-Agent-Cluster: ?0` disables the API (`SecurityError`).
 
 ## Native support
 

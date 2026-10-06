@@ -37,6 +37,48 @@ describe("page expressions", () => {
     expect(stringCall).toBeGreaterThan(objectCall);
   });
 
+  describe("executeTool expression against a fake ModelContext", () => {
+    async function run(
+      executeTool: (this: EventTarget, tool: unknown, input: unknown) => Promise<string>,
+    ) {
+      const mc = Object.assign(new EventTarget(), {
+        getTools: async () => [{ name: "place_order" }],
+        executeTool,
+      });
+      const g = globalThis as { document?: unknown };
+      const previous = g.document;
+      g.document = { modelContext: mc };
+      try {
+        return (await new Function(`return ${executeToolExpression("place_order", { qty: 1 })}`)()) as unknown;
+      } finally {
+        g.document = previous;
+      }
+    }
+
+    it("does not retry once the tool was activated, so side effects never repeat", async () => {
+      let runs = 0;
+      const result = await run(async function (this: EventTarget) {
+        const event = Object.assign(new Event("toolactivated"), { toolName: "place_order" });
+        this.dispatchEvent(event);
+        runs++;
+        throw new DOMException("", "UnknownError");
+      });
+      expect(runs).toBe(1);
+      expect(result).toMatchObject({ error: "execute-threw" });
+    });
+
+    it("still retries with a JSON string when the object form never reached the tool", async () => {
+      const inputs: unknown[] = [];
+      const result = await run(async (_tool, input) => {
+        inputs.push(input);
+        if (typeof input !== "string") throw new DOMException("", "UnknownError");
+        return '{"ok":true}';
+      });
+      expect(inputs).toEqual([{ qty: 1 }, '{"qty":1}']);
+      expect(result).toEqual({ raw: '{"ok":true}' });
+    });
+  });
+
   it("feature-detects document.modelContext before navigator", () => {
     const expr = listToolsExpression();
     expect(expr.indexOf("document.modelContext")).toBeGreaterThanOrEqual(0);

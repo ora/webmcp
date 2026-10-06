@@ -17,7 +17,12 @@ export interface ModelContextTool {
   description: string;
   title?: string;
   inputSchema?: Record<string, unknown>;
-  annotations?: { readOnlyHint?: boolean; untrustedContentHint?: boolean };
+  annotations?: {
+    readOnlyHint?: boolean;
+    untrustedContentHint?: boolean;
+    consequentialHint?: boolean;
+    debugging?: boolean;
+  };
   execute: (
     input: Record<string, unknown>,
     options?: ModelContextExecuteOptions,

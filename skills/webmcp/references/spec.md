@@ -1,6 +1,6 @@
 # WebMCP API contract (current spec snapshot)
 
-Snapshot: 2026-08-31
+Snapshot: 2026-10-02
 
 Snapshot of https://webmachinelearning.github.io/webmcp/ plus Chrome's
 preview surface. When this file and the live spec disagree, the live spec
@@ -12,9 +12,6 @@ forward whenever this file is re-verified against the current draft.
 
 - **`document.modelContext`** returns the `ModelContext` object. This is the
   only surface in the spec. It is `SecureContext`-gated: HTTPS or localhost.
-- The document's agent cluster must be **origin-keyed**: setting
-  `document.domain` or serving `Origin-Agent-Cluster: ?0` makes
-  `registerTool()` and `getTools()` reject with `SecurityError`.
 - **`navigator.modelContext` is not in the spec.** Chrome ≤149 previews and
   some older polyfills exposed it; Chrome 150 moved the getter to `document`
   (version table below). New code detects `document` only:
@@ -45,7 +42,16 @@ Tool descriptor:
 | `execute` | yes | `async (input, { signal }) => any`; return must survive `JSON.stringify`. A rejection reaches the agent as a bare `UnknownError` DOMException (message discarded) — fail by returning `{ error }` instead; reject only for cancellation |
 | `title` | no | human-readable label |
 | `inputSchema` | no | JSON Schema object; use `type: "object"`, describe every property, set `additionalProperties: false` |
-| `annotations` | no | `{ readOnlyHint?: boolean, untrustedContentHint?: boolean }` |
+| `annotations` | no | `{ readOnlyHint?, untrustedContentHint?, consequentialHint?, debugging? }`, all booleans defaulting to `false` |
+
+Annotations:
+
+| Hint | Set true when |
+| --- | --- |
+| `readOnlyHint` | the tool changes no state |
+| `untrustedContentHint` | the result can carry user or third-party content |
+| `consequentialHint` | executing it has significant, real-world or non-reversible effects (booking, payment, sending); agents may require user confirmation first |
+| `debugging` | the tool is meant for debugging and developer tooling, not end-user interactions |
 
 Options:
 
@@ -67,12 +73,21 @@ Promise<DOMString> executeTool(RegisteredTool tool, optional object input, optio
 origin exposure). `executeTool()` lets the page (or a console/test harness)
 invoke a tool exactly as an agent would; use it for verification. It
 resolves to a **DOMString** — the `execute` return value serialized as
-JSON — so parse it before asserting on fields.
+JSON — so parse it before asserting on fields. Omitting the input is the
+same as passing an empty object.
 
 ## Events
 
-- `toolchange` fires on `ModelContext` when tools register or unregister
-  (`ontoolchange` handler property is also defined).
+All three fire on `ModelContext`, with matching `on…` handler properties:
+
+- `toolchange` when tools register or unregister.
+- `toolactivated` (`ToolActivatedEvent`, `event.toolName`) right before a
+  tool's `execute` is invoked.
+- `toolcancel` (`ToolCancelEvent`, `event.toolName`) when the caller aborts a
+  pending execution; the tool's execute `signal` aborts at the same time.
+
+Feature-detect the last two: preview builds older than the 2026-09-17 draft
+may not fire them, and some fired a form-level `toolcanceled` instead.
 
 ## Cross-origin and iframes
 
@@ -115,10 +130,10 @@ form.addEventListener("submit", (event) => {
 });
 ```
 
-Events: `toolactivated` (agent pre-filled fields) and `toolcanceled` (user
-cancelled / `reset()`; note the single-l spelling). These are proposed in
-spec issue #146 and are not yet in the draft IDL; treat them as
-Chrome-preview behavior and feature-detect before relying on them.
+Events: listen for `toolactivated` and `toolcancel` on
+`document.modelContext` (see Events above) and filter on `event.toolName`.
+The form-level `toolcanceled` spelling from older Chrome previews is not in
+the spec.
 CSS state: `form:tool-form-active`, submit control `:tool-submit-active`.
 
 ## Registration failure taxonomy
@@ -131,7 +146,7 @@ synchronously, and the same `await` + `catch` handles both:
 | --- | --- |
 | `InvalidStateError` | duplicate name; empty `name`/`description`; name over 128 chars or outside `[a-zA-Z0-9_.-]` |
 | `NotAllowedError` | `"tools"` Permissions Policy denied (cross-origin iframe missing `allow="tools"`) |
-| `SecurityError` | `exposedTo` lists an untrusted origin (non-secure / not potentially trustworthy); or the document is not origin-keyed (`document.domain` set, or `Origin-Agent-Cluster: ?0`) — `getTools()` rejects the same way |
+| `SecurityError` | `exposedTo` lists an untrusted origin (non-secure / not potentially trustworthy); `getTools()` rejects the same way for `fromOrigins` |
 | `TypeError` / serialization errors | non-JSON-serializable or circular `inputSchema` |
 
 ## Chrome preview timeline (verify before promising)

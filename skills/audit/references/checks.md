@@ -32,6 +32,7 @@ than counted against it.
 | Check | Evidence to look for |
 | --- | --- |
 | WebMCP tools registered | `document.modelContext.getTools()` non-empty; `modelContext` / `toolname` in source |
+| WebMCP code current | API names, annotation keys and event names in source all exist in the "IDL Index" of the live draft (https://webmachinelearning.github.io/webmcp/); renamed or removed ones are findings |
 | Existing MCP server | MCP endpoint in code or docs (bridge candidate) |
 | Forms annotatable | real forms that could take `toolname` / `tooldescription` today |
 | Client-reachable action paths | stores/APIs a page tool could call without server-only imports |

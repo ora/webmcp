@@ -62,6 +62,7 @@ Copy and track:
 WebMCP progress:
 - [ ] 1. Inventory the app (read-only)
 - [ ] 2. Propose journeys + strategy (HARD GATE: wait for approval)
+- [ ] 2b. Live spec check
 - [ ] 3. Wire the runtime
 - [ ] 4. Implement the approved plan
 - [ ] 5. Verify in a browser (mandatory)
@@ -103,6 +104,27 @@ Out of scope this round: ...
 Tool descriptions ship verbatim from the approved plan; the description is
 the product. If implementation later forces a deviation, stop and re-present.
 
+### 2b. Live spec check
+
+The WebMCP draft changes monthly and references/spec.md is a dated
+snapshot. Before writing any code, fetch
+https://webmachinelearning.github.io/webmcp/ and read its date and its
+"IDL Index" section. Compare against references/spec.md: the surface,
+method signatures, `ModelContextTool` and `ToolAnnotations` members, event
+names, and the rejection taxonomy in the algorithm text.
+
+- **The live draft wins on facts.** When it is newer than the `Snapshot:`
+  line and differs, generate code against the live IDL, ignore the snapshot
+  claims it contradicts, and tell the user in one line what moved.
+- **The references still win on practice.** The draft carries no guidance on
+  tool design, returns, or security, leaves the declarative section as a
+  TODO, and does not describe Chrome preview quirks; keep those from the
+  references.
+- **Fetch failed:** continue on the snapshot and say so in the final report.
+
+Only the public spec page is fetched; nothing from the repo leaves the
+machine (rule 7).
+
 ### 3. Wire the runtime
 
 Skip when the plan is Declarative-only. Otherwise ensure
@@ -137,7 +159,8 @@ Non-negotiables for imperative tools (full contract in
    (`unregisterTool()` does not exist)
 3. Honor `execute`'s `{ signal }` in fetches and long work
 4. `annotations.readOnlyHint` must match reality;
-   `untrustedContentHint: true` when returns carry user or third-party text
+   `untrustedContentHint: true` when returns carry user or third-party text;
+   `consequentialHint: true` for significant or irreversible actions
 5. Validate input inside `execute`; fail by **returning**
    `{ error: "actionable message" }`, never by throwing — the spec maps a
    rejected `execute` to a bare `UnknownError` and discards the message.

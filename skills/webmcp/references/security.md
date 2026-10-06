@@ -16,8 +16,9 @@ as an authenticated capability with the blast radius of the current user.
    the final step to its confirm UI, or use prepare/confirm where confirm
    requires a token prepare returned. A warning sentence in the description
    is not a boundary.
-4. **Honest annotations.** `readOnlyHint` and `untrustedContentHint` must
-   match reality; wrong hints train agents into unsafe call patterns.
+4. **Honest annotations.** `readOnlyHint`, `untrustedContentHint` and
+   `consequentialHint` must match reality; wrong hints train agents into
+   unsafe call patterns.
 5. **No tool poisoning.** Never put instructions to the agent, secrets, or
    exfiltration bait in `name`, `title`, `description`, or parameter
    descriptions. Keep metadata boring and accurate.

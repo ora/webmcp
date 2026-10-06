@@ -33,11 +33,24 @@ export function executeToolExpression(
   const tool = tools.find((t) => t.name === ${JSON.stringify(name)});
   if (!tool) return { error: "not-found", names: tools.map((t) => t.name) };
   // Spec: inputObject is an object. Chrome ~151 only parses a JSON string;
-  // try the spec shape first, then fall back for current previews.
+  // try the spec shape first, then fall back for current previews. The spec
+  // fires toolactivated right before invoking execute, so once it fires the
+  // tool has run and a retry would repeat its side effects.
+  let activated = false;
+  const onActivated = (e) => {
+    if (e.toolName === undefined || e.toolName === tool.name) activated = true;
+  };
+  mc.addEventListener?.("toolactivated", onActivated);
   try {
     const raw = await mc.executeTool(tool, ${JSON.stringify(input)});
     return { raw };
   } catch (specShapeError) {
+    if (activated) {
+      return {
+        error: "execute-threw",
+        message: String((specShapeError && specShapeError.message) ?? specShapeError),
+      };
+    }
     try {
       const raw = await mc.executeTool(tool, ${JSON.stringify(JSON.stringify(input))});
       return { raw };
@@ -47,6 +60,8 @@ export function executeToolExpression(
         message: String((specShapeError && specShapeError.message) ?? specShapeError),
       };
     }
+  } finally {
+    mc.removeEventListener?.("toolactivated", onActivated);
   }
 })()`;
 }

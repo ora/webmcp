@@ -69,6 +69,11 @@ auth state once and settle everything for that page in one pass.
 5. **Security lint.** Static pass over registrations:
    - `readOnlyHint` true only for tools with no state change
    - `untrustedContentHint` true wherever returns carry UGC
+   - every annotation key and event name in the code exists in the "IDL
+     Index" of the live draft (https://webmachinelearning.github.io/webmcp/);
+     flag anything the draft renamed or removed
+   - `consequentialHint` true on booking, payment, sending and other
+     irreversible tools
    - no agent instructions, secrets, or URLs-to-elsewhere in names,
      titles, or descriptions
    - destructive/payment tools stop at a reversible boundary and
