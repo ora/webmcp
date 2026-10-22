@@ -29,6 +29,14 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./verify": {
+      "types": "./dist/verify.d.ts",
+      "default": "./dist/verify.js"
+    },
+    "./page-fns": {
+      "types": "./dist/page-fns.d.ts",
+      "default": "./dist/page-fns.js"
     }
   },
   "main": "./dist/index.js",

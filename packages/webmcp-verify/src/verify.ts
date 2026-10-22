@@ -27,7 +27,7 @@ export interface LintFinding {
 const NO_MODELCONTEXT_HELP =
   "The page exposes no ModelContext: WebMCP is not active in this browser. " +
   "Enable chrome://flags/#enable-webmcp-testing (or launch Chrome with " +
-  "--enable-features=WebMCPTesting,DevToolsWebMCPSupport), or load " +
+  "--enable-features=WebMCPTesting), or load " +
   "@mcp-b/webmcp-polyfill on the page.";
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -37,8 +37,12 @@ function asRecord(value: unknown): Record<string, unknown> {
   return value as Record<string, unknown>;
 }
 
-export async function listTools(evaluator: PageEvaluator): Promise<VerifiedTool[]> {
-  const result = asRecord(await evaluator.evaluate(listToolsExpression()));
+/**
+ * Normalize a raw page result from readToolsInPage/listToolsExpression.
+ * Shared by the CLI (over CDP) and the workbench extension (executeScript).
+ */
+export function normalizeListResult(rawResult: unknown): VerifiedTool[] {
+  const result = asRecord(rawResult);
   if (result.error === "no-modelcontext") throw new Error(NO_MODELCONTEXT_HELP);
   const tools = result.tools as (Omit<VerifiedTool, "inputSchema"> & {
     inputSchema: VerifiedTool["inputSchema"] | string;
@@ -57,14 +61,19 @@ export async function listTools(evaluator: PageEvaluator): Promise<VerifiedTool[
   });
 }
 
-export async function executeTool(
-  evaluator: PageEvaluator,
+export async function listTools(evaluator: PageEvaluator): Promise<VerifiedTool[]> {
+  return normalizeListResult(await evaluator.evaluate(listToolsExpression()));
+}
+
+/**
+ * Normalize a raw page result from runToolInPage/executeToolExpression.
+ * Shared by the CLI (over CDP) and the workbench extension (executeScript).
+ */
+export function normalizeExecuteResult(
+  rawResult: unknown,
   name: string,
-  input: Record<string, unknown>,
-): Promise<ExecuteResult> {
-  const result = asRecord(
-    await evaluator.evaluate(executeToolExpression(name, input)),
-  );
+): ExecuteResult {
+  const result = asRecord(rawResult);
   if (result.error === "no-modelcontext") throw new Error(NO_MODELCONTEXT_HELP);
   if (result.error === "not-found") {
     const names = (result.names as string[]).join(", ");
@@ -83,6 +92,17 @@ export async function executeTool(
     // executeTool resolves to a DOMString; not all implementations JSON-encode.
   }
   return { raw, parsed };
+}
+
+export async function executeTool(
+  evaluator: PageEvaluator,
+  name: string,
+  input: Record<string, unknown>,
+): Promise<ExecuteResult> {
+  return normalizeExecuteResult(
+    await evaluator.evaluate(executeToolExpression(name, input)),
+    name,
+  );
 }
 
 const LEGAL_NAME = /^[a-zA-Z0-9_.-]+$/;

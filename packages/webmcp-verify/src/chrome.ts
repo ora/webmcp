@@ -2,10 +2,13 @@ import { launch } from "chrome-launcher";
 import CDP from "chrome-remote-interface";
 import type { PageEvaluator } from "./verify.js";
 
-/** Chrome flags that turn WebMCP on in current preview builds. */
-export const WEBMCP_CHROME_FLAGS = [
-  "--enable-features=WebMCPTesting,DevToolsWebMCPSupport",
-];
+/**
+ * Chrome flags that turn WebMCP on in current preview builds. Chrome 152
+ * dropped DevToolsWebMCPSupport, and its presence invalidates the whole
+ * --enable-features list there; WebMCPTesting alone works on 151 and 152
+ * (both verified empirically).
+ */
+export const WEBMCP_CHROME_FLAGS = ["--enable-features=WebMCPTesting"];
 
 export interface OpenPageOptions {
   headless?: boolean;

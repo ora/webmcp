@@ -24,7 +24,7 @@ not when the build passes.
   harness exists).
 - Chrome installed. No flags or Canary needed for the packaged driver; it
   launches Chrome itself with
-  `--enable-features=WebMCPTesting,DevToolsWebMCPSupport`.
+  `--enable-features=WebMCPTesting`.
 
 ## Drivers, in order of preference
 

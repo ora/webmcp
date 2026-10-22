@@ -31,8 +31,8 @@ describe("page expressions", () => {
     // Spec says inputObject is an object; Chrome ~151 only parses a JSON
     // string. The expression must try the object first, then the string.
     const expr = executeToolExpression("search_books", { q: 1 });
-    const objectCall = expr.indexOf('mc.executeTool(tool, {"q":1})');
-    const stringCall = expr.indexOf('mc.executeTool(tool, "{\\"q\\":1}")');
+    const objectCall = expr.indexOf("mc.executeTool(tool, input)");
+    const stringCall = expr.indexOf("mc.executeTool(tool, JSON.stringify(input))");
     expect(objectCall).toBeGreaterThanOrEqual(0);
     expect(stringCall).toBeGreaterThan(objectCall);
   });

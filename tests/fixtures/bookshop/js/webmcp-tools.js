@@ -22,7 +22,9 @@ if (mc?.registerTool) {
           additionalProperties: false,
         },
         annotations: { readOnlyHint: true, untrustedContentHint: false },
-        async execute({ query }, { signal }) {
+        // Chrome ~151 calls execute(input) with no second argument; default
+        // the spec's context object so the destructure survives both shapes.
+        async execute({ query }, { signal } = {}) {
           const res = await fetch("books.json", { signal });
           if (!res.ok) return { error: `Catalog unavailable (${res.status}). Retry shortly.` };
           const books = await res.json();

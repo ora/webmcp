@@ -31,8 +31,10 @@ if (mc?.registerTool && ctx.bookId && ctx.inStock) {
           additionalProperties: false,
         },
         annotations: { readOnlyHint: false, untrustedContentHint: false },
-        async execute({ quantity }, { signal }) {
-          signal.throwIfAborted();
+        // Chrome ~151 calls execute(input) with no second argument; default
+        // the spec's context object so the destructure survives both shapes.
+        async execute({ quantity }, { signal } = {}) {
+          signal?.throwIfAborted();
           if (!Number.isInteger(quantity) || quantity < 1) {
             return { error: "quantity must be a positive integer." };
           }

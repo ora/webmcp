@@ -31,7 +31,7 @@ Options: `--json` (machine-readable report), `--headless`,
 ## Requirements
 
 - Chrome installed (a current stable; the CLI launches it with
-  `--enable-features=WebMCPTesting,DevToolsWebMCPSupport`).
+  `--enable-features=WebMCPTesting`).
 - A locally reachable page. State-changing tools should only be executed
   against local or seeded data.
 
